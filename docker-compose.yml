@@ -1,0 +1,40 @@
+version: "3.7"
+services:
+  webserver:
+    image: "nginx:alpine"
+    working_dir: /application
+    volumes:
+      - "./src:/application"
+      - "./.docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf"
+    ports:
+      - "31000:80"
+
+  php-fpm:
+    build: .docker/php-fpm-alpine
+    working_dir: /application
+    volumes:
+      - "./src:/application"
+      - "./.docker/php-fpm-alpine/php-ini-overrides.ini:/etc/php/8.1/fpm/conf.d/99-overrides.ini"
+
+  mariadb:
+    image: "mariadb:10.6"
+    # working_dir: /application
+    volumes:
+      # - "./mariadbdata:/application"
+      - "./mariadbdata:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_dev
+      - MYSQL_DATABASE=db_teste_dev_name
+      - MYSQL_USER=dev_database
+      - MYSQL_PASSWORD=teste_dev
+    ports:
+      - "31003:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - mariadb
+    ports:
+      - 8081:80
+    environment:
+      - PMA_ARBITRARY=1
